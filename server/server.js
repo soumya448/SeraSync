@@ -59,9 +59,9 @@ app.use((err, req, res, next) => {
 sequelize
   .sync({ force: false }) // set to true only if you want to reset DB
   .then(() => {
-    console.log('Database connected and synchronized.');
+    console.log('✅ Database connected and synchronized.');
     app.listen(process.env.PORT, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
+      console.log(`🚀 Server running on port ${process.env.PORT}`);
     });
   })
   .catch((err) => {

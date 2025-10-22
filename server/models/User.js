@@ -8,69 +8,92 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true
   },
-  firstName: { 
-    type: DataTypes.STRING,
-    allowNull: false 
+  email: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
   },
-  lastName: { 
-    type: DataTypes.STRING,
-    allowNull: false 
+  username: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+    unique: true
   },
-  username: { 
-    type: DataTypes.STRING, 
-    allowNull: true,
-    unique: true 
+  password: {
+    type: DataTypes.STRING(255),
+    allowNull: false
   },
-  email: { 
-    type: DataTypes.STRING, 
-    allowNull: true, 
-    unique: true 
+  firstName: {
+    type: DataTypes.STRING(100),
+    field: 'first_name'
   },
-  password: { 
-    type: DataTypes.STRING, 
-    allowNull: true 
+  lastName: {
+    type: DataTypes.STRING(100),
+    field: 'last_name'
   },
-  mobileNo: { 
-    type: DataTypes.STRING, 
-    allowNull: true,
-    unique: true 
+  dateOfBirth: {
+    type: DataTypes.DATEONLY,
+    field: 'date_of_birth'
   },
-  avatar: { 
-    type: DataTypes.STRING 
+  phoneNumber: {
+    type: DataTypes.STRING(20),
+    field: 'phone_number'
   },
-  roleId: { 
-    type: DataTypes.INTEGER, 
-    allowNull: false, 
-    defaultValue: 3
-    // Remove references from here - handle in associations
+  profilePictureUrl: {
+    type: DataTypes.STRING(500),
+    field: 'profile_picture_url'
   },
-  school_id: {
-    type: DataTypes.INTEGER,
-    allowNull: true
-    // Remove references from here - handle in associations
+  subscriptionTier: {
+    type: DataTypes.ENUM('free', 'premium', 'enterprise'),
+    defaultValue: 'free',
+    field: 'subscription_tier'
   },
-  is_active: {
+  isActive: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true
+    defaultValue: true,
+    field: 'is_active'
+  },
+  isEmailVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_email_verified'
+  },
+  lastLoginAt: {
+    type: DataTypes.DATE,
+    field: 'last_login_at'
   }
 }, {
   tableName: 'users',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
-});
-
-// Hash password before saving
-User.beforeCreate(async (user) => {
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-});
-
-User.beforeUpdate(async (user) => {
-  if (user.changed('password')) {
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
+  underscored: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+    }
   }
 });
+
+// Instance method to validate password
+User.prototype.validatePassword = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+// Remove password from JSON responses
+User.prototype.toJSON = function() {
+  const values = { ...this.get() };
+  delete values.password;
+  return values;
+};
 
 module.exports = User;
