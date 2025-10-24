@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@rive-app/react-canvas": "^4.23.4",
+    "@rive-app/react-canvas-lite": "^4.23.4",
+    "web-audio-api": "^0.2.2"
+  }
+}
